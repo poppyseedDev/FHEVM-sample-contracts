@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  bigint-buffer:
+    specifier: ^1.1.5
+    version: 1.1.5
   extra-bigint:
     specifier: ^1.1.18
     version: 1.2.0
@@ -2032,7 +2035,6 @@ packages:
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
-    dev: true
 
   /binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
