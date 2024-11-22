@@ -17,7 +17,7 @@ async function setupReencryption(instance: FhevmInstance, signer: HardhatEthersS
   return { publicKey, privateKey, signature: signature.replace("0x", "") };
 }
 
-describe("EncryptedCounter", function () {
+describe("EncryptedCounter4", function () {
   before(async function () {
     await initSigners(2); // Initialize signers
     this.signers = await getSigners();
@@ -36,16 +36,6 @@ describe("EncryptedCounter", function () {
     expect(counterValue); // Expect initial value to be zero
   });
 
-  it("should increment the counter", async function () {
-    // Perform the increment action
-    const tx = await this.counterContract.increment();
-    await tx.wait();
-
-    // Retrieve the updated counter value and check if it incremented
-    const counterValue = await this.counterContract.getCounter();
-    expect(counterValue); // Expect counter to be 1 after increment
-  });
-
   it("should increment by arbitrary encrypted amount", async function () {
     // Create encrypted input for amount to increment by
     const input = this.instances.alice.createEncryptedInput(this.contractAddress, this.signers.alice.address);
@@ -62,8 +52,12 @@ describe("EncryptedCounter", function () {
   });
 
   it("should allow reencryption and decryption of counter value", async function () {
-    // First increment counter to have a known value
-    const tx = await this.counterContract.increment();
+    const input = this.instances.alice.createEncryptedInput(this.contractAddress, this.signers.alice.address);
+    input.add8(1); // Increment by 1 as an example
+    const encryptedAmount = await input.encrypt();
+
+    // Call incrementBy with encrypted amount
+    const tx = await this.counterContract.incrementBy(encryptedAmount.handles[0], encryptedAmount.inputProof);
     await tx.wait();
 
     // Get the encrypted counter value
@@ -91,8 +85,14 @@ describe("EncryptedCounter", function () {
   });
 
   it("should allow reencryption of counter value", async function () {
-    // First increment counter to have a known value
-    const tx = await this.counterContract.connect(this.signers.bob).increment();
+    const input = this.instances.bob.createEncryptedInput(this.contractAddress, this.signers.bob.address);
+    input.add8(1); // Increment by 1 as an example
+    const encryptedAmount = await input.encrypt();
+
+    // Call incrementBy with encrypted amount
+    const tx = await this.counterContract
+      .connect(this.signers.bob)
+      .incrementBy(encryptedAmount.handles[0], encryptedAmount.inputProof);
     await tx.wait();
 
     // Get the encrypted counter value

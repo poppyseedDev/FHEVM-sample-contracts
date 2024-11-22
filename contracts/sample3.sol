@@ -22,24 +22,11 @@ contract EncryptedCounter3 is GatewayCaller {
         TFHE.allowThis(counter);
     }
 
-    function increment() public {
-        // Perform encrypted addition to increment the counter
-        counter = TFHE.add(counter, TFHE.asEuint8(1));
-
-        // Ensure this contract has access to the updated counter value
-        TFHE.allowThis(counter);
-    }
-
     function incrementBy(einput amount, bytes calldata inputProof) public {
         // Convert input to euint8 and add to counter
         euint8 incrementAmount = TFHE.asEuint8(amount, inputProof);
         counter = TFHE.add(counter, incrementAmount);
         TFHE.allowThis(counter);
-    }
-
-    function getCounter() public view returns (euint8) {
-        // Return the encrypted counter value
-        return counter;
     }
 
     /// @notice Request decryption of the counter value

@@ -5,7 +5,7 @@ import { awaitAllDecryptionResults, initGateway } from "../asyncDecrypt";
 import { createInstances } from "../instance";
 import { getSigners, initSigners } from "../signers";
 
-describe("EncryptedCounter", function () {
+describe("EncryptedCounter3", function () {
   before(async function () {
     await initSigners(2); // Initialize signers
     this.signers = await getSigners();
@@ -20,24 +20,6 @@ describe("EncryptedCounter", function () {
     this.instances = await createInstances(this.signers); // Set up instances for testing
   });
 
-  it("should initialize the counter to zero", async function () {
-    const counterValue = await this.counterContract.getCounter();
-    expect(counterValue); // Expect initial value to be zero
-
-    const tx = await this.counterContract.increment({ gasLimit: 5_000_000 });
-    await tx.wait();
-  });
-
-  it("should increment the counter", async function () {
-    // Perform the increment action
-    const tx = await this.counterContract.increment({ gasLimit: 5_000_000 });
-    await tx.wait();
-
-    // Retrieve the updated counter value and check if it incremented
-    const counterValue = await this.counterContract.getCounter();
-    expect(counterValue); // Expect counter to be 1 after increment
-  });
-
   it("should increment by arbitrary encrypted amount", async function () {
     // Create encrypted input for amount to increment by
     const input = this.instances.alice.createEncryptedInput(this.contractAddress, this.signers.alice.address);
@@ -47,23 +29,17 @@ describe("EncryptedCounter", function () {
     // Call incrementBy with encrypted amount
     const tx = await this.counterContract.incrementBy(encryptedAmount.handles[0], encryptedAmount.inputProof);
     await tx.wait();
-
-    // Get updated counter value
-    const counterValue = await this.counterContract.getCounter();
-    expect(counterValue); // Counter should be incremented by 5
   });
 
   it("should increment counter multiple times and decrypt the result", async function () {
-    // Increment counter twice
-    const tx1 = await this.counterContract.increment();
-    await tx1.wait();
+    // Create encrypted input for amount to increment by
+    const input = this.instances.alice.createEncryptedInput(this.contractAddress, this.signers.alice.address);
+    input.add8(5); // Increment by 5 as an example
+    const encryptedAmount = await input.encrypt();
 
-    const tx2 = await this.counterContract.increment();
-    await tx2.wait();
-
-    // Request decryption of counter value
-    const tx3 = await this.counterContract.increment();
-    await tx3.wait();
+    // Call incrementBy with encrypted amount
+    const tx = await this.counterContract.incrementBy(encryptedAmount.handles[0], encryptedAmount.inputProof);
+    await tx.wait();
 
     const tx4 = await this.counterContract.connect(this.signers.carol).requestDecryptCounter({ gasLimit: 5_000_000 });
     await tx4.wait();
@@ -73,6 +49,6 @@ describe("EncryptedCounter", function () {
 
     // Check decrypted value (should be 3: initial 0 + three increments)
     const decryptedValue = await this.counterContract.getDecryptedCounter();
-    expect(decryptedValue).to.equal(3);
+    expect(decryptedValue).to.equal(5);
   });
 });

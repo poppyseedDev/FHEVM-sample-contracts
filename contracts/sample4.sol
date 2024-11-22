@@ -16,18 +16,6 @@ contract EncryptedCounter4 {
         TFHE.setFHEVM(FHEVMConfig.defaultConfig());
     }
 
-    function increment() public {
-        // Initialize counter if it doesn't exist
-        if (!TFHE.isInitialized(counters[msg.sender])) {
-            counters[msg.sender] = TFHE.asEuint8(0);
-        }
-
-        // Perform encrypted addition to increment the sender's counter
-        counters[msg.sender] = TFHE.add(counters[msg.sender], TFHE.asEuint8(1));
-        TFHE.allowThis(counters[msg.sender]);
-        TFHE.allow(counters[msg.sender], msg.sender);
-    }
-
     function incrementBy(einput amount, bytes calldata inputProof) public {
         // Initialize counter if it doesn't exist
         if (!TFHE.isInitialized(counters[msg.sender])) {

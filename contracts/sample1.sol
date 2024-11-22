@@ -11,6 +11,7 @@ import "fhevm/lib/TFHE.sol";
 /// for understanding how to implement basic FHE operations in Solidity
 contract EncryptedCounter1 {
     euint8 counter;
+    euint8 CONST_ONE;
 
     constructor() {
         TFHE.setFHEVM(FHEVMConfig.defaultConfig());
@@ -18,15 +19,14 @@ contract EncryptedCounter1 {
         // Initialize counter with an encrypted zero value
         counter = TFHE.asEuint8(0);
         TFHE.allowThis(counter);
+        // Save on gas by computing the constant here
+        CONST_ONE = TFHE.asEuint8(1);
+        TFHE.allowThis(CONST_ONE);
     }
 
     function increment() public {
         // Perform encrypted addition to increment the counter
-        counter = TFHE.add(counter, TFHE.asEuint8(1));
-    }
-
-    function getCounter() public view returns (euint8) {
-        // Return the encrypted counter value
-        return counter;
+        counter = TFHE.add(counter, CONST_ONE);
+        TFHE.allowThis(counter);
     }
 }
