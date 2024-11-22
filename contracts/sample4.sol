@@ -3,6 +3,11 @@ pragma solidity ^0.8.24;
 
 import "fhevm/lib/TFHE.sol";
 
+/// @title EncryptedCounter4
+/// @notice A contract that maintains encrypted counters for each user and is meant for demonstrating how re-encryption works
+/// @dev Uses TFHE library for fully homomorphic encryption operations
+/// @custom:security Each user can only access and modify their own counter
+/// @custom:experimental This contract is experimental and uses FHE technology
 contract EncryptedCounter4 {
     // Mapping from user address to their encrypted counter value
     mapping(address => euint8) private counters;

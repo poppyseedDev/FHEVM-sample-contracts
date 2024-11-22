@@ -3,6 +3,10 @@ pragma solidity ^0.8.24;
 
 import "fhevm/lib/TFHE.sol";
 
+/// @title EncryptedCounter2
+/// @notice A contract that maintains an encrypted counter and is meant for demonstrating how to add encrypted types
+/// @dev Uses TFHE library for fully homomorphic encryption operations
+/// @custom:experimental This contract is experimental and uses FHE technology
 contract EncryptedCounter2 {
     euint8 counter;
 
