@@ -20,17 +20,6 @@ describe("EncryptedCounter3", function () {
     this.instances = await createInstances(this.signers); // Set up instances for testing
   });
 
-  it("should increment by arbitrary encrypted amount", async function () {
-    // Create encrypted input for amount to increment by
-    const input = this.instances.alice.createEncryptedInput(this.contractAddress, this.signers.alice.address);
-    input.add8(5); // Increment by 5 as an example
-    const encryptedAmount = await input.encrypt();
-
-    // Call incrementBy with encrypted amount
-    const tx = await this.counterContract.incrementBy(encryptedAmount.handles[0], encryptedAmount.inputProof);
-    await tx.wait();
-  });
-
   it("should increment counter multiple times and decrypt the result", async function () {
     // Create encrypted input for amount to increment by
     const input = this.instances.alice.createEncryptedInput(this.contractAddress, this.signers.alice.address);

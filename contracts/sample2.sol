@@ -9,7 +9,6 @@ import "fhevm/lib/TFHE.sol";
 /// @custom:experimental This contract is experimental and uses FHE technology
 contract EncryptedCounter2 {
     euint8 counter;
-    euint8 CONST_ONE;
 
     constructor() {
         TFHE.setFHEVM(FHEVMConfig.defaultConfig());
@@ -17,9 +16,6 @@ contract EncryptedCounter2 {
         // Initialize counter with an encrypted zero value
         counter = TFHE.asEuint8(0);
         TFHE.allowThis(counter);
-        // Save on gas by computing the constant here
-        CONST_ONE = TFHE.asEuint8(1);
-        TFHE.allowThis(CONST_ONE);
     }
 
     function incrementBy(einput amount, bytes calldata inputProof) public {
