@@ -1,22 +1,9 @@
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { expect } from "chai";
-import type { FhevmInstance } from "fhevmjs";
 import { ethers } from "hardhat";
 
 import { createInstance } from "../instance";
-import { reencryptEuint8, reencryptEuint64 } from "../reencrypt";
+import { reencryptEuint8 } from "../reencrypt";
 import { getSigners, initSigners } from "../signers";
-
-/**
- * Helper function to setup reencryption
- */
-// async function setupReencryption(instance: FhevmInstance, signer: HardhatEthersSigner, contractAddress: string) {
-//   const { publicKey, privateKey } = instance.generateKeypair();
-//   const eip712 = instance.createEIP712(publicKey, contractAddress);
-//   const signature = await signer.signTypedData(eip712.domain, { Reencrypt: eip712.types.Reencrypt }, eip712.message);
-
-//   return { publicKey, privateKey, signature: signature.replace("0x", "") };
-// }
 
 describe("EncryptedCounter4", function () {
   before(async function () {
@@ -64,23 +51,6 @@ describe("EncryptedCounter4", function () {
     // Get the encrypted counter value
     const encryptedCounter = await this.counterContract.getCounter();
 
-    // // Set up reencryption keys and signature
-    // const { publicKey, privateKey, signature } = await setupReencryption(
-    //   this.instances.alice,
-    //   this.signers.alice,
-    //   this.contractAddress,
-    // );
-
-    // // Perform reencryption and decryption
-    // const decryptedValue = await this.instances.alice.reencrypt(
-    //   encryptedCounter,
-    //   privateKey,
-    //   publicKey,
-    //   signature,
-    //   this.contractAddress,
-    //   this.signers.alice.address,
-    // );
-
     const decryptedValue = await reencryptEuint8(
       this.signers,
       this.instances,
@@ -106,23 +76,6 @@ describe("EncryptedCounter4", function () {
 
     // Get the encrypted counter value
     const encryptedCounter = await this.counterContract.connect(this.signers.bob).getCounter();
-
-    // Set up reencryption keys and signature
-    // const { publicKey, privateKey, signature } = await setupReencryption(
-    //   this.instances.bob,
-    //   this.signers.bob,
-    //   this.contractAddress,
-    // );
-
-    // // Perform reencryption and decryption
-    // const decryptedValue = await this.instances.bob.reencrypt(
-    //   encryptedCounter,
-    //   privateKey,
-    //   publicKey,
-    //   signature,
-    //   this.contractAddress,
-    //   this.signers.bob.address,
-    // );
 
     const decryptedValue = await reencryptEuint8(
       this.signers,

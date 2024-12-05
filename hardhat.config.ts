@@ -1,10 +1,9 @@
 import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 import dotenv from "dotenv";
-import * as fs from "fs-extra";
 import "hardhat-deploy";
 import "hardhat-ignore-warnings";
-import type { HardhatUserConfig, extendProvider } from "hardhat/config";
+import { HardhatUserConfig, extendProvider } from "hardhat/config";
 import { task } from "hardhat/config";
 import type { NetworkUserConfig } from "hardhat/types";
 import { resolve } from "path";
@@ -15,7 +14,7 @@ import "./tasks/accounts";
 import "./tasks/mint";
 import { setCodeMocked } from "./test/mockedSetup";
 
-extendProvider(async (provider, config, network) => {
+extendProvider(async (provider) => {
   const newProvider = new CustomProvider(provider);
   return newProvider;
 });
@@ -33,7 +32,7 @@ const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
 dotenv.config({ path: resolve(__dirname, dotenvConfigPath) });
 
 // Ensure that we have all the environment variables we need.
-let mnemonic: string = process.env.MNEMONIC!;
+const mnemonic: string = process.env.MNEMONIC!;
 
 const chainIds = {
   zama: 8009,
@@ -74,16 +73,6 @@ task("coverage").setAction(async (taskArgs, hre, runSuper) => {
 
   await runSuper(taskArgs);
 });
-
-function replaceImportStatement(filePath: string, oldImport: string, newImport: string): void {
-  try {
-    let fileContent = fs.readFileSync(filePath, "utf-8");
-    fileContent = fileContent.replace(oldImport, newImport);
-    fs.writeFileSync(filePath, fileContent, "utf-8");
-  } catch (error) {
-    console.error(`Error updating file: ${error}`);
-  }
-}
 
 task("test", async (taskArgs, hre, runSuper) => {
   // Run modified test task
