@@ -1,3 +1,5 @@
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+
 import {
   ACL_ADDRESS,
   FHEPAYMENT_ADDRESS,
@@ -11,24 +13,34 @@ import {
 const nullAddress = "0x0000000000000000000000000000000000000000";
 const oneAddress = "0x0000000000000000000000000000000000000001";
 
-export async function setCodeMocked(hre) {
-  const aclArtifact = require("../node_modules/fhevm-core-contracts/artifacts/contracts/ACL.sol/ACL.json");
-  const aclBytecode = aclArtifact.deployedBytecode;
+export async function setCodeMocked(hre: any): Promise<void> {
+  const aclArtifact = await import("../node_modules/fhevm-core-contracts/artifacts/contracts/ACL.sol/ACL.json");
+  const aclBytecode = aclArtifact.default.deployedBytecode;
   await hre.network.provider.send("hardhat_setCode", [ACL_ADDRESS, aclBytecode]);
-  const execArtifact = require("../node_modules/fhevm-core-contracts/artifacts/contracts/TFHEExecutorWithEvents.sol/TFHEExecutorWithEvents.json");
-  const execBytecode = execArtifact.deployedBytecode;
+  const execArtifact = await import(
+    "../node_modules/fhevm-core-contracts/artifacts/contracts/TFHEExecutorWithEvents.sol/TFHEExecutorWithEvents.json"
+  );
+  const execBytecode = execArtifact.default.deployedBytecode;
   await hre.network.provider.send("hardhat_setCode", [TFHEEXECUTOR_ADDRESS, execBytecode]);
-  const kmsArtifact = require("../node_modules/fhevm-core-contracts/artifacts/contracts/KMSVerifier.sol/KMSVerifier.json");
-  const kmsBytecode = kmsArtifact.deployedBytecode;
+  const kmsArtifact = await import(
+    "../node_modules/fhevm-core-contracts/artifacts/contracts/KMSVerifier.sol/KMSVerifier.json"
+  );
+  const kmsBytecode = kmsArtifact.default.deployedBytecode;
   await hre.network.provider.send("hardhat_setCode", [KMSVERIFIER_ADDRESS, kmsBytecode]);
-  const inputArtifact = require("../node_modules/fhevm-core-contracts/artifacts/contracts/InputVerifier.coprocessor.sol/InputVerifier.json");
-  const inputBytecode = inputArtifact.deployedBytecode;
+  const inputArtifact = await import(
+    "../node_modules/fhevm-core-contracts/artifacts/contracts/InputVerifier.coprocessor.sol/InputVerifier.json"
+  );
+  const inputBytecode = inputArtifact.default.deployedBytecode;
   await hre.network.provider.send("hardhat_setCode", [INPUTVERIFIER_ADDRESS, inputBytecode]);
-  const fhepaymentArtifact = require("../node_modules/fhevm-core-contracts/artifacts/contracts/FHEPayment.sol/FHEPayment.json");
-  const fhepaymentBytecode = fhepaymentArtifact.deployedBytecode;
+  const fhepaymentArtifact = await import(
+    "../node_modules/fhevm-core-contracts/artifacts/contracts/FHEPayment.sol/FHEPayment.json"
+  );
+  const fhepaymentBytecode = fhepaymentArtifact.default.deployedBytecode;
   await hre.network.provider.send("hardhat_setCode", [FHEPAYMENT_ADDRESS, fhepaymentBytecode]);
-  const gatewayArtifact = require("../node_modules/fhevm-core-contracts/artifacts/gateway/GatewayContract.sol/GatewayContract.json");
-  const gatewayBytecode = gatewayArtifact.deployedBytecode;
+  const gatewayArtifact = await import(
+    "../node_modules/fhevm-core-contracts/artifacts/gateway/GatewayContract.sol/GatewayContract.json"
+  );
+  const gatewayBytecode = gatewayArtifact.default.deployedBytecode;
   await hre.network.provider.send("hardhat_setCode", [GATEWAYCONTRACT_ADDRESS, gatewayBytecode]);
   const zero = await impersonateNullAddress(hre);
   const one = await impersonateOneAddress(hre);
@@ -43,7 +55,7 @@ export async function setCodeMocked(hre) {
 }
 
 let initNull = false;
-async function impersonateNullAddress(hre) {
+async function impersonateNullAddress(hre: HardhatRuntimeEnvironment) {
   // for mocked mode
   await hre.network.provider.request({
     method: "hardhat_impersonateAccount",
@@ -61,7 +73,7 @@ async function impersonateNullAddress(hre) {
 }
 
 let initOne = false;
-async function impersonateOneAddress(hre) {
+async function impersonateOneAddress(hre: HardhatRuntimeEnvironment) {
   // for mocked mode
   await hre.network.provider.request({
     method: "hardhat_impersonateAccount",

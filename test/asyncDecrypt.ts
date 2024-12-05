@@ -1,13 +1,11 @@
-import dotenv from "dotenv";
 import { Wallet } from "ethers";
-import fs from "fs";
+import { Contract } from "ethers";
 import { ethers, network } from "hardhat";
 
+import gatewayArtifact from "../node_modules/fhevm-core-contracts/artifacts/gateway/GatewayContract.sol/GatewayContract.json";
 import { ACL_ADDRESS, GATEWAYCONTRACT_ADDRESS, KMSVERIFIER_ADDRESS, PRIVATE_KEY_KMS_SIGNER } from "./constants";
 import { awaitCoprocessor, getClearText } from "./coprocessorUtils";
 import { waitNBlocks } from "./utils";
-
-const gatewayArtifact = require("../node_modules/fhevm-core-contracts/artifacts/gateway/GatewayContract.sol/GatewayContract.json");
 
 const networkName = network.name;
 
@@ -59,7 +57,7 @@ const ifaceEventDecryption = new ethers.Interface(["event EventDecryption" + arg
 const argEvents2 = "(uint256 indexed requestID, bool success, bytes result)";
 const ifaceResultCallback = new ethers.Interface(["event ResultCallback" + argEvents2]);
 
-let gateway;
+let gateway: Contract;
 let firstBlockListening: number;
 let lastBlockSnapshotForDecrypt: number;
 
@@ -102,8 +100,8 @@ export const awaitAllDecryptionResults = async (): Promise<void> => {
   }
 };
 
-const getAlreadyFulfilledDecryptions = async (): Promise<[bigint]> => {
-  let results = [];
+const getAlreadyFulfilledDecryptions = async (): Promise<bigint[]> => {
+  let results: bigint[] = [];
   const eventDecryptionResult = await gateway.filters.ResultCallback().getTopicFilter();
   const filterDecryptionResult = {
     address: GATEWAYCONTRACT_ADDRESS,
@@ -112,7 +110,7 @@ const getAlreadyFulfilledDecryptions = async (): Promise<[bigint]> => {
     topics: eventDecryptionResult,
   };
   const pastResults = await ethers.provider.getLogs(filterDecryptionResult);
-  results = results.concat(pastResults.map((result) => ifaceResultCallback.parseLog(result).args[0]));
+  results = results.concat(pastResults.map((result) => ifaceResultCallback?.parseLog(result)?.args[0]));
   return results;
 };
 
@@ -130,11 +128,11 @@ const fulfillAllPastRequestsIds = async (mocked: boolean) => {
   const pastRequests = await ethers.provider.getLogs(filterDecryption);
   for (const request of pastRequests) {
     const event = ifaceEventDecryption.parseLog(request);
-    const requestID = event.args[0];
-    const handles = event.args[1];
+    const requestID = event?.args[0];
+    const handles = event?.args[1];
     const typesList = handles.map((handle) => parseInt(handle.toString(16).slice(-4, -2), 16));
-    const msgValue = event.args[4];
-    const passSignaturesToCaller = event.args[6];
+    const msgValue = event?.args[4];
+    const passSignaturesToCaller = event?.args[6];
     if (!results.includes(requestID)) {
       // if request is not already fulfilled
       if (mocked) {
@@ -142,13 +140,13 @@ const fulfillAllPastRequestsIds = async (mocked: boolean) => {
         await awaitCoprocessor();
 
         // first check tat all handles are allowed for decryption
-        const aclArtifact = require("../node_modules/fhevm-core-contracts/artifacts/contracts/ACL.sol/ACL.json");
+        const aclArtifact = await import("../node_modules/fhevm-core-contracts/artifacts/contracts/ACL.sol/ACL.json");
         const acl = await ethers.getContractAt(aclArtifact.abi, ACL_ADDRESS);
         const isAllowedForDec = await Promise.all(handles.map(async (handle) => acl.isAllowedForDecryption(handle)));
         if (!allTrue(isAllowedForDec)) {
           throw new Error("Some handle is not authorized for decryption");
         }
-        const types = typesList.map((num) => CiphertextType[num]);
+        const types = typesList.map((num: number) => CiphertextType[num]);
         const values = await Promise.all(handles.map(async (handle) => BigInt(await getClearText(handle))));
         const valuesFormatted = values.map((value, index) =>
           types[index] === "address" ? "0x" + value.toString(16).padStart(40, "0") : value,

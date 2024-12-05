@@ -1,8 +1,7 @@
 import { toBigIntBE, toBufferBE } from "bigint-buffer";
 import crypto from "crypto";
-import dotenv from "dotenv";
 import { Wallet, ethers } from "ethers";
-import * as fs from "fs";
+import hre from "hardhat";
 import { Keccak } from "sha3";
 import { isAddress } from "web3-validator";
 
@@ -16,9 +15,7 @@ import {
 import { insertSQL } from "./coprocessorUtils";
 import { awaitCoprocessor, getClearText } from "./coprocessorUtils";
 
-const hre = require("hardhat");
-
-const aclAdd = ACL_ADDRESS;
+// const aclAdd = ACL_ADDRESS;
 
 enum Types {
   ebool = 0,
@@ -362,7 +359,7 @@ function uint8ArrayToHexString(uint8Array: Uint8Array) {
 }
 
 function numberToHex(num: number) {
-  let hex = num.toString(16);
+  const hex = num.toString(16);
   return hex.length % 2 ? "0" + hex : hex;
 }
 
@@ -401,10 +398,9 @@ async function computeInputSignatureCopro(
   userAddress: string,
   contractAddress: string,
 ): Promise<string> {
-  let signature: string;
   const privKeySigner = PRIVATE_KEY_COPROCESSOR_ACCOUNT;
   const coprocSigner = new Wallet(privKeySigner).connect(ethers.provider);
-  signature = await coprocSign(hash, handlesList, userAddress, contractAddress, coprocSigner);
+  const signature = await coprocSign(hash, handlesList, userAddress, contractAddress, coprocSigner);
   return signature;
 }
 
