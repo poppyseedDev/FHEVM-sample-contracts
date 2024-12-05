@@ -2,21 +2,20 @@
 pragma solidity ^0.8.24;
 
 import "fhevm/lib/TFHE.sol";
+import "fhevm/config/ZamaFHEVMConfig.sol";
+import "fhevm/config/ZamaGatewayConfig.sol";
 import "fhevm/gateway/GatewayCaller.sol";
 
 /// @title EncryptedCounter3
 /// @notice A contract that maintains an encrypted counter and is meant for demonstrating how decryption works
 /// @dev Uses TFHE library for fully homomorphic encryption operations and Gateway for decryption
 /// @custom:experimental This contract is experimental and uses FHE technology with decryption capabilities
-contract EncryptedCounter3 is GatewayCaller {
+contract EncryptedCounter3 is SepoliaZamaFHEVMConfig, SepoliaZamaGatewayConfig, GatewayCaller {
     /// @dev Decrypted state variable
     euint8 counter;
     uint8 public decryptedCounter;
 
     constructor() {
-        TFHE.setFHEVM(FHEVMConfig.defaultConfig());
-        Gateway.setGateway(Gateway.defaultGatewayAddress());
-
         // Initialize counter with an encrypted zero value
         counter = TFHE.asEuint8(0);
         TFHE.allowThis(counter);

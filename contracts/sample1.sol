@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import "fhevm/lib/TFHE.sol";
+import "fhevm/config/ZamaFHEVMConfig.sol";
 
 /// @title EncryptedCounter1
 /// @notice A basic contract demonstrating the setup of encrypted types
@@ -9,13 +10,11 @@ import "fhevm/lib/TFHE.sol";
 /// @custom:experimental This is a minimal example contract intended only for learning purposes
 /// @custom:notice This contract has limited real-world utility and serves primarily as a starting point
 /// for understanding how to implement basic FHE operations in Solidity
-contract EncryptedCounter1 {
+contract EncryptedCounter1 is SepoliaZamaFHEVMConfig {
     euint8 counter;
     euint8 CONST_ONE;
 
     constructor() {
-        TFHE.setFHEVM(FHEVMConfig.defaultConfig());
-
         // Initialize counter with an encrypted zero value
         counter = TFHE.asEuint8(0);
         TFHE.allowThis(counter);

@@ -75,9 +75,9 @@ environment variable. You can follow the example in `.env.example` or start with
 cp .env.example .env
 ```
 
-If you don't already have a mnemonic, you can use this [website](https://iancoleman.io/bip39/) to generate one.
+If you don't already have a mnemonic, you can use this [website](https://iancoleman.io/bip39/) to generate one. An alternative, if you have [foundry](https://book.getfoundry.sh/getting-started/installation) installed is to use the `cast wallet new-mnemonic` command.
 
-Then, proceed with installing dependencies - please **_make sure to use Node v20_** or more recent:
+Then, install all needed dependencies - please **_make sure to use Node v20_** or more recent:
 
 ```sh
 pnpm install
@@ -154,7 +154,7 @@ covered or missed by your test suite. This allows increased security by pointing
 the current tests.
 
 > [!Note]
-> Due to intrinsic limitations of the original EVM, the mocked version differ in few corner cases from the real fhEVM, the main difference is the difference in gas consumption for the FHE operations (native gas is around 5% overestimated in mocked mode). This means that before deploying to production, developers should still run the tests with the original fhEVM node, as a final check in non-mocked mode (see next section).
+> Due to intrinsic limitations of the original EVM, the mocked version differs in rare edge cases from the real fhEVM, the main difference is the gas consumption for the FHE operations (native gas is around 5% underestimated in mocked mode). This means that before deploying to production, developers should still run the tests with the original fhEVM node, as a final check - i.e in non-mocked mode (see next section).
 
 ### Non-mocked mode
 
@@ -167,7 +167,13 @@ npx hardhat test [PATH_TO_YOUR_TEST] --network sepolia
 The `--network sepolia` flag will make your test run on a real fhevm coprocessor.
 
 > [!Note]
-> For this test to succeed, ensure you have funded your test accounts on Sepolia, and that you are passing the correct `FHEVMConfig` struct in the constructor of your deployed smart contract, as an argument to `TFHE.setFHEVM(...);` (see [fhevm documentation](https://docs.zama.ai/fhevm) for more details).
+> For this test to succeed, first ensure you set your own private `MNEMONIC` variable in the `.env` file and then  ensure you have funded your test accounts on Sepolia. For example you can use the following command to get the corresponding private keys associated with the first `5` accounts derived from the mnemonic: 
+```
+npx hardhat get-accounts --num-accounts 5
+```
+This will let you add them to the Metamask app, to easily fund them from your personal wallet. 
+
+If you don't own already Sepolia test tokens, you can for example use a free faucet such as [https://sepolia-faucet.pk910.de/](https://sepolia-faucet.pk910.de/).
 
 ### Syntax Highlighting
 

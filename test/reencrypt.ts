@@ -1,5 +1,6 @@
+import { FhevmInstance } from "fhevmjs/node";
+
 import { Signers } from "./signers";
-import type { FhevmInstances } from "./types";
 
 const EBOOL_T = 0;
 const EUINT4_T = 1;
@@ -32,7 +33,7 @@ export function verifyType(handle: bigint, expectedType: number) {
 
 export async function reencryptEbool(
   signers: Signers,
-  instances: FhevmInstances,
+  instances: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
@@ -43,7 +44,7 @@ export async function reencryptEbool(
 
 export async function reencryptEuint4(
   signers: Signers,
-  instances: FhevmInstances,
+  instances: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
@@ -54,7 +55,7 @@ export async function reencryptEuint4(
 
 export async function reencryptEuint8(
   signers: Signers,
-  instances: FhevmInstances,
+  instances: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
@@ -65,7 +66,7 @@ export async function reencryptEuint8(
 
 export async function reencryptEuint16(
   signers: Signers,
-  instances: FhevmInstances,
+  instances: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
@@ -76,7 +77,7 @@ export async function reencryptEuint16(
 
 export async function reencryptEuint32(
   signers: Signers,
-  instances: FhevmInstances,
+  instances: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
@@ -87,7 +88,7 @@ export async function reencryptEuint32(
 
 export async function reencryptEuint64(
   signers: Signers,
-  instances: FhevmInstances,
+  instances: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
@@ -98,7 +99,7 @@ export async function reencryptEuint64(
 
 export async function reencryptEuint128(
   signers: Signers,
-  instances: FhevmInstances,
+  instances: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
@@ -109,7 +110,7 @@ export async function reencryptEuint128(
 
 export async function reencryptEaddress(
   signers: Signers,
-  instances: FhevmInstances,
+  instances: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
@@ -122,7 +123,7 @@ export async function reencryptEaddress(
 
 export async function reencryptEuint256(
   signers: Signers,
-  instances: FhevmInstances,
+  instances: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
@@ -133,7 +134,7 @@ export async function reencryptEuint256(
 
 export async function reencryptEbytes64(
   signers: Signers,
-  instances: FhevmInstances,
+  instances: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
@@ -144,7 +145,7 @@ export async function reencryptEbytes64(
 
 export async function reencryptEbytes128(
   signers: Signers,
-  instances: FhevmInstances,
+  instances: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
@@ -155,7 +156,7 @@ export async function reencryptEbytes128(
 
 export async function reencryptEbytes256(
   signers: Signers,
-  instances: FhevmInstances,
+  instances: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
@@ -170,20 +171,20 @@ export async function reencryptEbytes256(
  */
 async function reencryptHandle(
   signers: Signers,
-  instances: FhevmInstances,
+  instance: FhevmInstance,
   user: string,
   handle: bigint,
   contractAddress: string,
 ): Promise<any> {
-  const { publicKey: publicKey, privateKey: privateKey } = instances[user as keyof FhevmInstances].generateKeypair();
-  const eip712 = instances[user as keyof FhevmInstances].createEIP712(publicKey, contractAddress);
+  const { publicKey: publicKey, privateKey: privateKey } = instance.generateKeypair();
+  const eip712 = instance.createEIP712(publicKey, contractAddress);
   const signature = await signers[user as keyof Signers].signTypedData(
     eip712.domain,
     { Reencrypt: eip712.types.Reencrypt },
     eip712.message,
   );
 
-  const reencryptedHandle = await instances[user as keyof FhevmInstances].reencrypt(
+  const reencryptedHandle = await instance.reencrypt(
     handle,
     privateKey,
     publicKey,

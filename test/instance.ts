@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import {
   clientKeyDecryptor,
   createEIP712,
@@ -6,66 +5,42 @@ import {
   generateKeypair,
   getCiphertextCallParams,
 } from "fhevmjs";
+import { FhevmInstance } from "fhevmjs/node";
 import { readFileSync } from "fs";
-import * as fs from "fs";
 import { ethers, ethers as hethers, network } from "hardhat";
 import { homedir } from "os";
 import path from "path";
 
+import { ACL_ADDRESS, GATEWAY_URL, KMSVERIFIER_ADDRESS } from "./constants";
 import { awaitCoprocessor, getClearText } from "./coprocessorUtils";
 import { createEncryptedInputMocked, reencryptRequestMocked } from "./fhevmjsMocked";
-import type { Signers } from "./signers";
-import { FhevmInstances } from "./types";
 
 const FHE_CLIENT_KEY_PATH = process.env.FHE_CLIENT_KEY_PATH;
 
 let clientKey: Uint8Array | undefined;
 
-const kmsAdd = dotenv.parse(
-  fs.readFileSync("node_modules/fhevm-core-contracts/addresses/.env.kmsverifier"),
-).KMS_VERIFIER_CONTRACT_ADDRESS;
-const aclAdd = dotenv.parse(
-  fs.readFileSync("node_modules/fhevm-core-contracts/addresses/.env.acl"),
-).ACL_CONTRACT_ADDRESS;
+const kmsAdd = KMSVERIFIER_ADDRESS;
+const aclAdd = ACL_ADDRESS;
 
-const createInstanceMocked = async () => {
-  const instance = {
-    reencrypt: reencryptRequestMocked,
-    createEncryptedInput: createEncryptedInputMocked,
-    getPublicKey: () => "0xFFAA44433",
-    generateKeypair: generateKeypair,
-    createEIP712: createEIP712(network.config.chainId),
-  };
-  return instance;
-};
-
-export const createInstances = async (accounts: Signers): Promise<FhevmInstances> => {
-  // Create instance
-  const instances: FhevmInstances = {} as FhevmInstances;
+export const createInstance = async (): Promise<FhevmInstance> => {
   if (network.name === "hardhat") {
-    await Promise.all(
-      Object.keys(accounts).map(async (k) => {
-        instances[k as keyof FhevmInstances] = await createInstanceMocked();
-      }),
-    );
+    const instance = {
+      reencrypt: reencryptRequestMocked,
+      createEncryptedInput: createEncryptedInputMocked,
+      getPublicKey: () => "0xFFAA44433",
+      generateKeypair: generateKeypair,
+      createEIP712: createEIP712(network.config.chainId),
+    };
+    return instance;
   } else {
-    await Promise.all(
-      Object.keys(accounts).map(async (k) => {
-        instances[k as keyof FhevmInstances] = await createInstance();
-      }),
-    );
+    const instance = await createFhevmInstance({
+      kmsContractAddress: kmsAdd,
+      aclContractAddress: aclAdd,
+      networkUrl: network.config.url,
+      gatewayUrl: GATEWAY_URL,
+    });
+    return instance;
   }
-  return instances;
-};
-
-export const createInstance = async () => {
-  const instance = await createFhevmInstance({
-    kmsContractAddress: kmsAdd,
-    aclContractAddress: aclAdd,
-    networkUrl: network.config.url,
-    gatewayUrl: "http://localhost:7077",
-  });
-  return instance;
 };
 
 const getCiphertext = async (handle: bigint, ethers: typeof hethers): Promise<string> => {

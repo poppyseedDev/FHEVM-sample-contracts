@@ -8,16 +8,12 @@ import type { HardhatUserConfig, extendProvider } from "hardhat/config";
 import { task } from "hardhat/config";
 import type { NetworkUserConfig } from "hardhat/types";
 import { resolve } from "path";
-import * as path from "path";
 
 import CustomProvider from "./CustomProvider";
 // Adjust the import path as needed
 import "./tasks/accounts";
-import "./tasks/getEthereumAddress";
 import "./tasks/mint";
-import "./tasks/taskDeploy";
-import "./tasks/taskGatewayRelayer";
-import "./tasks/taskTFHE";
+import { setCodeMocked } from "./test/mockedSetup";
 
 extendProvider(async (provider, config, network) => {
   const newProvider = new CustomProvider(provider);
@@ -92,43 +88,7 @@ function replaceImportStatement(filePath: string, oldImport: string, newImport: 
 task("test", async (taskArgs, hre, runSuper) => {
   // Run modified test task
   if (hre.network.name === "hardhat") {
-    // in fhevm mode all this block is done when launching the node via `pnmp fhevm:start`
-    const privKeyGatewayDeployer = process.env.PRIVATE_KEY_GATEWAY_DEPLOYER;
-    const privKeyFhevmDeployer = process.env.PRIVATE_KEY_FHEVM_DEPLOYER;
-    await hre.run("task:computeGatewayAddress", { privateKey: privKeyGatewayDeployer });
-    await hre.run("task:computeACLAddress", { privateKey: privKeyFhevmDeployer });
-    await hre.run("task:computeTFHEExecutorAddress", { privateKey: privKeyFhevmDeployer });
-    await hre.run("task:computeKMSVerifierAddress", { privateKey: privKeyFhevmDeployer });
-    await hre.run("task:computeInputVerifierAddress", { privateKey: privKeyFhevmDeployer, useAddress: false });
-    await hre.run("task:computeFHEPaymentAddress", { privateKey: privKeyFhevmDeployer });
-    await hre.run("compile:specific", { contract: "contracts/" });
-    const sourceDir = path.resolve(__dirname, "node_modules/fhevm-core-contracts/");
-    const destinationDir = path.resolve(__dirname, "fhevmTemp/");
-    fs.copySync(sourceDir, destinationDir, { dereference: true });
-
-    const sourceDir2 = path.resolve("./node_modules/fhevm/gateway/GatewayContract.sol");
-    const destinationFilePath = path.join(destinationDir, "GatewayContract.sol");
-    fs.copySync(sourceDir2, destinationFilePath, { dereference: true });
-    const oldImport = `import "../lib/TFHE.sol";`;
-    const newImport = `import "fhevm/lib/TFHE.sol";`;
-    replaceImportStatement(destinationFilePath, oldImport, newImport);
-    const sourceDir3 = path.resolve("./node_modules/fhevm/gateway/IKMSVerifier.sol");
-    const destinationFilePath3 = path.join(destinationDir, "IKMSVerifier.sol");
-    fs.copySync(sourceDir3, destinationFilePath3, { dereference: true });
-
-    await hre.run("compile:specific", { contract: "fhevmTemp/" });
-    await hre.run("task:faucetToPrivate", { privateKey: privKeyFhevmDeployer });
-    await hre.run("task:deployACL", { privateKey: privKeyFhevmDeployer });
-    await hre.run("task:deployTFHEExecutor", { privateKey: privKeyFhevmDeployer });
-    await hre.run("task:deployKMSVerifier", { privateKey: privKeyFhevmDeployer });
-    await hre.run("task:deployInputVerifier", { privateKey: privKeyFhevmDeployer });
-    await hre.run("task:deployFHEPayment", { privateKey: privKeyFhevmDeployer });
-    await hre.run("task:addSigners", {
-      numSigners: process.env.NUM_KMS_SIGNERS!,
-      privateKey: privKeyFhevmDeployer,
-      useAddress: false,
-    });
-    await hre.run("task:launchFhevm", { skipGetCoin: false, useAddress: false });
+    await setCodeMocked(hre);
   }
   await runSuper();
 });

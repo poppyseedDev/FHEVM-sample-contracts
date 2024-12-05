@@ -1,14 +1,12 @@
-import dotenv from "dotenv";
 import { log2 } from "extra-bigint";
-import * as fs from "fs";
 import { ethers } from "hardhat";
 import hre from "hardhat";
 import { Database } from "sqlite3";
 
+import { TFHEEXECUTOR_ADDRESS } from "./constants";
 import operatorsPrices from "./operatorsPrices.json";
 
-const parsedEnvCoprocessor = dotenv.parse(fs.readFileSync("node_modules/fhevm-core-contracts/addresses/.env.exec"));
-const coprocAddress = parsedEnvCoprocessor.TFHE_EXECUTOR_CONTRACT_ADDRESS;
+const executorAddress = TFHEEXECUTOR_ADDRESS;
 
 let firstBlockListening = 0;
 let lastBlockSnapshot = 0;
@@ -167,11 +165,11 @@ async function processAllPastTFHEExecutorEvents() {
     }
   }
 
-  const contract = new ethers.Contract(coprocAddress, abi, provider);
+  const contract = new ethers.Contract(executorAddress, abi, provider);
 
   // Fetch all events emitted by the contract
   const filter = {
-    address: coprocAddress,
+    address: executorAddress,
     fromBlock: firstBlockListening,
     toBlock: latestBlockNumber,
   };
@@ -605,9 +603,9 @@ export function getFHEGasFromTxReceipt(receipt: ethers.TransactionReceipt): numb
   if (receipt.status === 0) {
     throw new Error("Transaction reverted");
   }
-  const contract = new ethers.Contract(coprocAddress, abi, ethers.provider);
+  const contract = new ethers.Contract(executorAddress, abi, ethers.provider);
   const relevantLogs = receipt.logs.filter((log: ethers.Log) => {
-    if (log.address.toLowerCase() !== coprocAddress.toLowerCase()) {
+    if (log.address.toLowerCase() !== executorAddress.toLowerCase()) {
       return false;
     }
     try {
