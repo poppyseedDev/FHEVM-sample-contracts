@@ -102,7 +102,7 @@ function getRandomBigInt(numBits: number): bigint {
   return randomBigInt;
 }
 
-function bitwiseNotUintBits(value: BigInt, numBits: number) {
+function bitwiseNotUintBits(value: bigint, numBits: number) {
   if (typeof value !== "bigint") {
     throw new TypeError("The input value must be a BigInt.");
   }
